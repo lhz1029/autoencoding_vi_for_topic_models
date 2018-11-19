@@ -60,13 +60,31 @@ proba_list = [1.0/num_topics for _ in topic_list]
 for t in topic_list:
     t /= t.sum()
 # tI is a topic only existing in the test set
+# but is made up of constituent topics from up above
+# instead of a never-before seen topic
 tI = np.asarray([
+    [.00, .00, .33],
+    [.33, .33, .33],
+    [.00, .00, .33],
+    ])
+tJ = np.asarray([
     [.33, .00, .00],
     [.33, .00, .00],
     [.33, .00, .00],
     ])
-new_proba_list = [1]
-new_topic_list = [tI]
+tK = np.asarray([
+    [.33, .00, .00],
+    [.33, .33, .33],
+    [.33, .00, .00],
+    ])
+tL = np.asarray([
+    [.00, .33, .00],
+    [.00, .33, .00],
+    [.33, .33, .33],
+    ])
+new_topic_list = [tI, tJ, tK, tL]
+num_new_topics = len(new_topic_list)
+new_proba_list = [1.0/num_new_topics for _ in new_topic_list]
 for t in new_topic_list:
     t /= t.sum()
 
@@ -101,7 +119,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_path", default=os.path.abspath('.'), type=str)
-    parser.add_argument("--n_docs_train", default=5000, type=int)
+    parser.add_argument("--n_docs_train", default=100000, type=int)
     parser.add_argument("--n_docs_test", default=5000, type=int)
     parser.add_argument("--n_docs_valid", default=5000, type=int)
 
