@@ -120,12 +120,19 @@ class VAE(object):
         opt, cost,emb = self.sess.run((self.optimizer, self.cost,self.network_weights['weights_gener']['h2']),feed_dict={self.x: X,self.keep_prob: .75})
         return cost,emb
 
+    def recreate_input(self, X):
+        output = self.sess.run((self.x_reconstr_mean),feed_dict={self.x: X, self.keep_prob: 1.0})
+        return output
+
     def test(self, X):
+        """ Best for a single input of shape (dim,). Note the np.expand_dims() """
         cost = self.sess.run((self.cost),
                                         feed_dict={self.x: np.expand_dims(X, axis=0),self.keep_prob: 1.0})
         return cost
     def topic_prop(self, X):
+        """ Best for a single input of shape (dim,). Note the np.expand_dims() """
         """heta_ is the topic proportion vector. Apply softmax transformation to it before use.
         """
         theta_ = self.sess.run((self.z),feed_dict={self.x: np.expand_dims(X, axis=0),self.keep_prob: 1.0})
         return theta_
+

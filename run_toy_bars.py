@@ -132,12 +132,12 @@ def calcPerp(model):
 def softmax(x):
     return np.exp(x) / np.sum(np.exp(x), axis=0)
 
-def plot_sample_data(docs):
-    docs_sample = docs[:10]
-    vmax = np.max(docs_sample)
+def plot_sample_data(docs_sample, name):
+    # we estimate the total counts by the mean number of words per document
+    vmax = np.mean(np.sum(docs_sample, axis=1))
     show_square_images(docs_sample, vmin=0, vmax=vmax)
     plt.tight_layout()
-    plt.savefig('sample_docs.png')
+    plt.savefig(name)
 
 def main(argv):
     m = ''
@@ -191,7 +191,10 @@ def main(argv):
         elif opt == "-e":
             e=int(arg)
 
-    plot_sample_data(docs_tr)
+    train_sample = docs_tr[:10]
+    test_sample = docs_te[:10]
+    plot_sample_data(train_sample, 'docs_train.png')
+    plot_sample_data(test_sample, 'docs_test.png')
     minibatches = create_minibatch(docs_tr.astype('float32'))
     network_architecture,batch_size,learning_rate=make_network(f,s,t,b,r)
     print network_architecture
@@ -203,6 +206,10 @@ def main(argv):
     print_top_words(topic_word_proportions)
     calcPerp(vae)
     print(softmax(doc_topic_proportions[0]))
+    recreated_docs = vae.recreate_input(train_sample)
+    plot_sample_data(recreated_docs, 'recreated_docs_train.png')
+    recreated_docs = vae.recreate_input(test_sample)
+    plot_sample_data(recreated_docs, 'recreated_docs_test.png')
 
 if __name__ == "__main__":
    main(sys.argv[1:])
