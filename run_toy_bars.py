@@ -10,12 +10,8 @@ from time import time
 import matplotlib.pyplot as plt
 import pickle
 import sys, getopt
-from models import prodlda, nvlda
-from bnpy.viz.BarsViz import show_square_images
-import matplotlib.pyplot as plt
+from models import prodlda, nvlda, helpers
 '''-----------Data--------------'''
-def onehot(data, min_length):
-    return np.bincount(data, minlength=min_length) 
 
 dataset_tr = 'data/toy_bars/train.txt.npy'
 data_tr = np.load(dataset_tr)
@@ -27,8 +23,8 @@ vocab_size = 9
 # vocab_size=len(vocab)
 #--------------convert to one-hot representation------------------
 print 'Converting data to one-hot representation'
-data_tr = np.array([onehot(doc.astype('int'),vocab_size) for doc in data_tr if np.sum(doc)!=0])
-data_te = np.array([onehot(doc.astype('int'),vocab_size) for doc in data_te if np.sum(doc)!=0])
+data_tr = np.array([helpers.onehot(doc.astype('int'),vocab_size) for doc in data_tr if np.sum(doc)!=0])
+data_te = np.array([helpers.onehot(doc.astype('int'),vocab_size) for doc in data_te if np.sum(doc)!=0])
 #--------------print the data dimentions--------------------------
 print 'Data Loaded'
 print 'Dim Training Data',data_tr.shape
@@ -114,11 +110,11 @@ def train(network_architecture, minibatches, type='prodlda',learning_rate=0.001,
                   "cost=", "{:.9f}".format(avg_cost)
     return vae,emb
 
-def print_top_words(beta):
-    # plot each topic using the BarsViz
-    show_square_images(beta, vmin=0, vmax=1)
-    plt.tight_layout()
-    plt.savefig('inferred_topics.png')
+# def print_top_words(beta):
+#     # plot each topic using the BarsViz
+#     show_square_images(beta, vmin=0, vmax=1)
+#     plt.tight_layout()
+#     plt.savefig('inferred_topics.png')
 
 def calcPerp(model):
     cost=[]
@@ -131,13 +127,6 @@ def calcPerp(model):
 
 def softmax(x):
     return np.exp(x) / np.sum(np.exp(x), axis=0)
-
-def plot_sample_data(docs_sample, name):
-    # we estimate the total counts by the mean number of words per document
-    vmax = np.mean(np.sum(docs_sample, axis=1))
-    show_square_images(docs_sample, vmin=0, vmax=vmax)
-    plt.tight_layout()
-    plt.savefig(name)
 
 def main(argv):
     m = ''
@@ -191,10 +180,10 @@ def main(argv):
         elif opt == "-e":
             e=int(arg)
 
-    train_sample = docs_tr[:10]
-    test_sample = docs_te[:10]
-    plot_sample_data(train_sample, 'docs_train.png')
-    plot_sample_data(test_sample, 'docs_test.png')
+    train_sample = docs_tr[:12]
+    test_sample = docs_te[:12]
+    helpers.plot_bars(train_sample, 'docs_train.png')
+    helpers.plot_bars(test_sample, 'docs_test.png')
     minibatches = create_minibatch(docs_tr.astype('float32'))
     network_architecture,batch_size,learning_rate=make_network(f,s,t,b,r)
     print network_architecture
@@ -203,13 +192,13 @@ def main(argv):
         network_architecture, minibatches, m, training_epochs=e,
         batch_size=batch_size,learning_rate=learning_rate)
     doc_topic_proportions = vae.topic_prop(docs_tr.astype('float32')[0])
-    print_top_words(topic_word_proportions)
+    helpers.plot_bars(softmax(topic_word_proportions), 'inferred_topics.png')
     calcPerp(vae)
     print(softmax(doc_topic_proportions[0]))
     recreated_docs = vae.recreate_input(train_sample)
-    plot_sample_data(recreated_docs, 'recreated_docs_train.png')
+    helpers.plot_bars(recreated_docs, 'recreated_docs_train.png')
     recreated_docs = vae.recreate_input(test_sample)
-    plot_sample_data(recreated_docs, 'recreated_docs_test.png')
+    helpers.plot_bars(recreated_docs, 'recreated_docs_test.png')
 
 if __name__ == "__main__":
    main(sys.argv[1:])
